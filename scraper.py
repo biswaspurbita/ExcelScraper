@@ -35,10 +35,25 @@ class Amazon(Scraper):
         all_products = soup.find_all("div", class_="s-asin")
         sponsored_products = list(filter(lambda x: x.find(class_="s-sponsored-label-text"), all_products))
         non_sponsored_products = list(filter(lambda x: not x.find(class_="s-sponsored-label-text"), all_products))
+
         all_rank = [idx for idx, element in enumerate(all_products) if element.attrs["data-asin"] == asin]
         sponsored_rank = [idx for idx, element in enumerate(sponsored_products) if element.attrs["data-asin"] == asin]
         non_sponsored_rank = [idx for idx, element in enumerate(non_sponsored_products) if
                               element.attrs["data-asin"] == asin]
+
+        #Get Review and Rating
+        rating = soup.find('span', {'class': 'a-icon-alt'})
+        for x in all_rank:
+            if soup.find('span', {'class': 'a-icon-alt'}) in enumerate(all_rank):
+                print(x)
+        review_number = soup.find('span', {'class': "a-size-base"})
+        for y in all_rank:
+            if soup.find('span', {'class': "a-size-base"}) in enumerate(all_rank):
+                print(y)
+
+        #print(rating)
+        #print(review_number)
+
         amz_global_rank = Amazon.getRankFromPosition(all_rank)
         amz_sponsored_rank = Amazon.getRankFromPosition(sponsored_rank)
         amz_non_sponsored_rank = Amazon.getRankFromPosition(non_sponsored_rank)
@@ -53,7 +68,9 @@ class Amazon(Scraper):
             'Rank': {
                 'Global': amz_global_rank,
                 'Sponsored': amz_sponsored_rank,
-                'Non-Sponsored': amz_non_sponsored_rank
+                'Non-Sponsored': amz_non_sponsored_rank,
+                'Rating': rating,
+                'Review': review_number
             }
         }
         return result_dict
@@ -61,4 +78,3 @@ class Amazon(Scraper):
 
 # result_data = [[run("mars by GHC Hair Shampoo for Anti Hair fall | DHT Blocker | Sulphate Free Hair Growth Shampoo for Men (200ml)",
 #    "dht blocker shampoo for men", "B08QMRYP1S"),],]
-
