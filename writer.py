@@ -1,3 +1,4 @@
+
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from headers import Singleton
@@ -35,10 +36,10 @@ class GoogleSheet(metaclass=Singleton):
         if not data:
             return
 
-        result_data = [[data["timestamp"], data["Product Name"], data["Asin"], data["Site"], data["Rank"]["Global"], data["Rank"]["Sponsored"], data["Rank"]["Non-Sponsored"]]]
+        result_data = [[data["timestamp"], data["keyword"], data["Product Name"], data["Asin"], data["Site"], data["Rank"]["Global"], data["Rank"]["Sponsored"], data["Rank"]["Non-Sponsored"], data["Rank"]["Rating"], data["Rank"]["Review"]]]
         resource = {
             "majorDimension": "ROWS",
             "values": result_data
         }
-        request = self.sheet.values().append(spreadsheetId=GoogleSheet.SPREADSHEET_ID, range='data!A2', valueInputOption='USER_ENTERED', body=resource).execute()
+        request = self.sheet.values().append(spreadsheetId=GoogleSheet.SPREADSHEET_ID, range='Amazon!A2', valueInputOption='USER_ENTERED', body=resource).execute()
         return request
