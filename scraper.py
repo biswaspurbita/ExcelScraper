@@ -2,7 +2,7 @@ import datetime
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 import requests
-
+import time
 
 class Scraper(ABC):
     @staticmethod
@@ -29,29 +29,29 @@ class Amazon(Scraper):
 
     @staticmethod
     def scrape(product_name="", keyword="", asin="", headers=def_headers):
+        #Amazon
         url = f"{Amazon.base_url}s?k={Amazon.getAmazonSearchString(keyword)}&ref=nb_sb_noss"
         response = requests.get(url, headers=headers)
+        print(response.headers)
+        if response.status_code == 429:
+            time.sleep(int(response.headers["Retry-After"]))
         soup = BeautifulSoup(response.text, "html.parser")
         all_products = soup.find_all("div", class_="s-asin")
         sponsored_products = list(filter(lambda x: x.find(class_="s-sponsored-label-text"), all_products))
         non_sponsored_products = list(filter(lambda x: not x.find(class_="s-sponsored-label-text"), all_products))
 
         all_rank = [idx for idx, element in enumerate(all_products) if element.attrs["data-asin"] == asin]
+        products = [element for idx, element in enumerate(all_products) if element.attrs["data-asin"] == asin]
         sponsored_rank = [idx for idx, element in enumerate(sponsored_products) if element.attrs["data-asin"] == asin]
         non_sponsored_rank = [idx for idx, element in enumerate(non_sponsored_products) if
                               element.attrs["data-asin"] == asin]
-
-        #Get Review and Rating
-        rating = soup.find('span', {'class': 'a-icon-alt'})
-        for x in all_rank:
-            if soup.find('span', {'class': 'a-icon-alt'}) in enumerate(all_rank):
-                print(x)
-        review_number = soup.find('span', {'class': "a-size-base"})
-        for y in all_rank:
-            if soup.find('span', {'class': "a-size-base"}) in enumerate(all_rank):
-                print(y)
-
+        #print(products)
+        # Get Review and Rating
+        prod_soup = BeautifulSoup(str(products), "html.parser")
+        #print(prod_soup)
+        rating = prod_soup.find('span', {'class': 'a-icon-alt'})
         #print(rating)
+        review_number = prod_soup.find('span', {'class': "a-size-base"})
         #print(review_number)
 
         amz_global_rank = Amazon.getRankFromPosition(all_rank)
@@ -62,6 +62,7 @@ class Amazon(Scraper):
                  f"Non-sponsored: {amz_non_sponsored_rank}"
         result_dict = {
             'timestamp': datetime.datetime.now().isoformat(),
+            'keyword': keyword,
             'Product Name': product_name,
             'Asin': asin,
             'Site': "Amazon",
@@ -69,8 +70,8 @@ class Amazon(Scraper):
                 'Global': amz_global_rank,
                 'Sponsored': amz_sponsored_rank,
                 'Non-Sponsored': amz_non_sponsored_rank,
-                'Rating': rating,
-                'Review': review_number
+                'Rating': str(rating),
+                'Review': str(review_number)
             }
         }
         return result_dict
